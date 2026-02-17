@@ -2,28 +2,69 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { firstName, lastName, email, meetingId, meetingDate, meetingTopic, joinUrl } =
-      await request.json();
+    const {
+      firstName,
+      lastName,
+      email,
+      company,
+      role,
+      meetingId,
+      meetingDate,
+      meetingTopic,
+      joinUrl,
+    } = await request.json();
 
     if (!firstName || !lastName || !email || !meetingId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    const portalId = process.env.HUBSPOT_PORTAL_ID;
+    const formId = process.env.HUBSPOT_FORM_ID;
     const privateToken = process.env.HUBSPOT_PRIVATE_APP_TOKEN;
 
-    if (!privateToken) {
+    if (!portalId || !formId || !privateToken) {
       return NextResponse.json({ error: 'HubSpot credentials not configured' }, { status: 500 });
     }
 
-    const headers = {
+    const authHeaders = {
       Authorization: `Bearer ${privateToken}`,
       'Content-Type': 'application/json',
     };
 
-    // 1. Search for existing contact by email
+    // 1. Submit to HubSpot Forms API (records form submission activity)
+    const formFields: { name: string; value: string }[] = [
+      { name: 'firstname', value: firstName },
+      { name: 'lastname', value: lastName },
+      { name: 'email', value: email },
+    ];
+    if (company) formFields.push({ name: 'company', value: company });
+    if (role) formFields.push({ name: 'what_best_describes_your_role_', value: role });
+
+    const formRes = await fetch(
+      `https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: formFields,
+          context: {
+            pageUri: 'https://zoom-webinar-manager.vercel.app/register',
+            pageName: 'Nekst Tips & Tricks Webinar Registration',
+          },
+        }),
+      }
+    );
+
+    if (!formRes.ok) {
+      const err = await formRes.text();
+      console.error('HubSpot form submission error:', err);
+      // Non-fatal — fall through to Contacts API
+    }
+
+    // 2. Search for existing contact by email
     const searchRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts/search', {
       method: 'POST',
-      headers,
+      headers: authHeaders,
       body: JSON.stringify({
         filterGroups: [
           { filters: [{ propertyName: 'email', operator: 'EQ', value: email }] },
@@ -42,22 +83,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const contactProperties: Record<string, string> = {
+      firstname: firstName,
+      lastname: lastName,
+    };
+    if (company) contactProperties.company = company;
+    if (role) contactProperties.what_best_describes_your_role_ = role;
+
     if (contactId) {
-      // 2a. Update existing contact
+      // 3a. Update existing contact
       await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`, {
         method: 'PATCH',
-        headers,
-        body: JSON.stringify({
-          properties: { firstname: firstName, lastname: lastName },
-        }),
+        headers: authHeaders,
+        body: JSON.stringify({ properties: contactProperties }),
       });
     } else {
-      // 2b. Create new contact
+      // 3b. Create new contact
       const createRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
         method: 'POST',
-        headers,
+        headers: authHeaders,
         body: JSON.stringify({
-          properties: { email, firstname: firstName, lastname: lastName },
+          properties: { email, ...contactProperties },
         }),
       });
 
@@ -71,13 +117,19 @@ export async function POST(request: NextRequest) {
       contactId = createData.id;
     }
 
-    // 3. Add a note with meeting registration details
+    // 4. Add a note with meeting registration details
     if (contactId) {
-      const noteBody = `Registered for Nekst Tips & Tricks Webinar\nDate: ${meetingDate}\nTopic: ${meetingTopic}\nJoin URL: ${joinUrl}\nMeeting ID: ${meetingId}`;
+      const noteBody = [
+        'Registered for Nekst Tips & Tricks Webinar',
+        `Date: ${meetingDate}`,
+        `Topic: ${meetingTopic}`,
+        `Join URL: ${joinUrl}`,
+        `Meeting ID: ${meetingId}`,
+      ].join('\n');
 
       const noteRes = await fetch('https://api.hubapi.com/crm/v3/objects/notes', {
         method: 'POST',
-        headers,
+        headers: authHeaders,
         body: JSON.stringify({
           properties: {
             hs_note_body: noteBody,
@@ -86,9 +138,7 @@ export async function POST(request: NextRequest) {
           associations: [
             {
               to: { id: contactId },
-              types: [
-                { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 },
-              ],
+              types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }],
             },
           ],
         }),
@@ -96,7 +146,6 @@ export async function POST(request: NextRequest) {
 
       if (!noteRes.ok) {
         console.error('HubSpot note creation failed:', await noteRes.text());
-        // Non-fatal — contact was created/updated successfully
       }
     }
 

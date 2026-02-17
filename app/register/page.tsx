@@ -39,6 +39,8 @@ export default function RegisterPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [company, setCompany] = useState('');
+  const [role, setRole] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [joinUrl, setJoinUrl] = useState<string | null>(null);
@@ -111,6 +113,8 @@ export default function RegisterPage() {
           firstName,
           lastName,
           email,
+          company,
+          role,
           meetingId: selectedMeeting.id,
           meetingDate: selected?.dateLabel || '',
           meetingTopic: selectedMeeting.topic,
@@ -409,6 +413,45 @@ export default function RegisterPage() {
                     onFocus={(e) => (e.target.style.borderColor = INPUT_FOCUS)}
                     onBlur={(e) => (e.target.style.borderColor = INPUT_BORDER)}
                   />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="Acme Realty"
+                    style={inputStyle}
+                    onFocus={(e) => (e.target.style.borderColor = INPUT_FOCUS)}
+                    onBlur={(e) => (e.target.style.borderColor = INPUT_BORDER)}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>
+                    What best describes your role?
+                  </label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    style={{
+                      ...inputStyle,
+                      color: role ? NAVY : '#94A3B8',
+                      appearance: 'auto',
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = INPUT_FOCUS)}
+                    onBlur={(e) => (e.target.style.borderColor = INPUT_BORDER)}
+                  >
+                    <option value="" disabled>Select your role...</option>
+                    <option value="Individual Agent">Individual Agent</option>
+                    <option value="Real Estate Team">Real Estate Team</option>
+                    <option value="Independent Transaction Coordinator">Independent Transaction Coordinator</option>
+                    <option value="Team of TC&apos;s">Team of TC&apos;s</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
 
                 {submitError && (
