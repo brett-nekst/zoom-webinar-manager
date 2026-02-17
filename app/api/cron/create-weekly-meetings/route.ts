@@ -68,9 +68,11 @@ export async function GET(request: NextRequest) {
     const token = await getZoomToken();
     const targetDates = getNextWednesdays(3);
 
+    const userId = process.env.ZOOM_USER_ID || 'me';
+
     // Fetch all existing scheduled meetings
     const listRes = await fetch(
-      'https://api.zoom.us/v2/users/me/meetings?type=scheduled&page_size=300',
+      `https://api.zoom.us/v2/users/${userId}/meetings?type=scheduled&page_size=300`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
@@ -97,7 +99,7 @@ export async function GET(request: NextRequest) {
 
       const topic = 'Nekst Tips & Tricks Webinar';
 
-      const createRes = await fetch('https://api.zoom.us/v2/users/me/meetings', {
+      const createRes = await fetch(`https://api.zoom.us/v2/users/${userId}/meetings`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
