@@ -82,7 +82,7 @@ export default function Home() {
       const defaultTopics: Record<string, string> = {};
       const defaultDurations: Record<string, string> = {};
       wednesdays.forEach((w) => {
-        defaultTopics[w.date] = `Weekly Webinar - ${w.label}`;
+        defaultTopics[w.date] = 'Nekst Tips & Tricks Webinar';
         defaultDurations[w.date] = '60';
       });
       setTopics((prev) => ({ ...defaultTopics, ...prev }));
@@ -107,7 +107,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          topic: topics[slot.date] || `Weekly Webinar - ${slot.label}`,
+          topic: topics[slot.date] || 'Nekst Tips & Tricks Webinar',
           date: slot.date,
           duration: parseInt(durations[slot.date] || '60'),
           agenda: agendas[slot.date] || '',

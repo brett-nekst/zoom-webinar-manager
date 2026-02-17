@@ -95,8 +95,7 @@ export async function GET(request: NextRequest) {
         continue;
       }
 
-      const label = formatDateLabel(date);
-      const topic = `Weekly Webinar - ${label}`;
+      const topic = 'Nekst Tips & Tricks Webinar';
 
       const createRes = await fetch('https://api.zoom.us/v2/users/me/meetings', {
         method: 'POST',
