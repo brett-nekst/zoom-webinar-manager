@@ -19,6 +19,15 @@ interface AvailableDate {
 
 type Step = 'select' | 'form' | 'success';
 
+// Nekst brand colors
+const BRAND_BLUE = '#1565D8';
+const NAVY = '#0D1F3C';
+const GRAY_TEXT = '#64748B';
+const INPUT_BORDER = '#CBD5E1';
+const INPUT_FOCUS = '#1565D8';
+const BG_HERO_FROM = '#C8E2F5';
+const BG_HERO_TO = '#EEF5FB';
+
 export default function RegisterPage() {
   const [availableDates, setAvailableDates] = useState<AvailableDate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +53,6 @@ export default function RegisterPage() {
         }
         const meetings: ZoomMeeting[] = await res.json();
 
-        // Filter to only upcoming "Nekst Tips & Tricks Webinar" meetings
         const now = new Date();
         const upcoming = meetings
           .filter(
@@ -127,223 +135,414 @@ export default function RegisterPage() {
 
   const selectedDateInfo = availableDates.find((d) => d.meeting.id === selectedMeeting?.id);
 
+  const inputStyle = {
+    width: '100%',
+    background: '#fff',
+    border: `1px solid ${INPUT_BORDER}`,
+    borderRadius: '5px',
+    padding: '10px 14px',
+    fontSize: '14px',
+    color: NAVY,
+    outline: 'none',
+    transition: 'border-color 0.15s',
+    fontFamily: 'inherit',
+  };
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
-      {/* Header */}
-      <div className="border-b border-gray-800 bg-gray-900">
-        <div className="max-w-xl mx-auto px-6 py-5">
-          <h1 className="text-xl font-semibold text-white">Nekst Tips &amp; Tricks Webinar</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Register for an upcoming session</p>
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'Be Vietnam Pro', system-ui, sans-serif" }}>
+      {/* Hero */}
+      <div
+        style={{
+          background: `linear-gradient(180deg, ${BG_HERO_FROM} 0%, ${BG_HERO_TO} 100%)`,
+          padding: '60px 24px 48px',
+          textAlign: 'center',
+        }}
+      >
+        {/* Nekst wordmark */}
+        <div style={{ marginBottom: '28px' }}>
+          <svg width="120" height="36" viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text
+              x="0"
+              y="28"
+              fontFamily="'Be Vietnam Pro', system-ui, sans-serif"
+              fontSize="32"
+              fontWeight="700"
+              fill={BRAND_BLUE}
+              letterSpacing="-1"
+            >
+              nekst
+            </text>
+          </svg>
         </div>
+
+        <p style={{ fontSize: '13px', fontWeight: 600, color: BRAND_BLUE, marginBottom: '10px', letterSpacing: '0.02em' }}>
+          See what Nekst is all about
+        </p>
+        <h1
+          style={{
+            fontSize: '32px',
+            fontWeight: 700,
+            color: NAVY,
+            lineHeight: 1.25,
+            margin: '0 auto 16px',
+            maxWidth: '520px',
+          }}
+        >
+          Join us live for a comprehensive webinar on all things Nekst
+        </h1>
+        <p style={{ fontSize: '15px', color: GRAY_TEXT, maxWidth: '480px', margin: '0 auto', lineHeight: 1.6 }}>
+          Dive into Nekst, best practices for accelerating your workflows, and building a foundation
+          of defensibility for your business.
+        </p>
       </div>
 
-      <div className="flex-1 max-w-xl mx-auto w-full px-6 py-10">
-        {/* Step: Select Date */}
-        {step === 'select' && (
-          <div>
-            <h2 className="text-base font-medium text-white mb-1">Choose a date</h2>
-            <p className="text-sm text-gray-400 mb-6">All sessions are at 2:00 PM Eastern Time</p>
-
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-16 bg-gray-900 border border-gray-800 rounded-xl animate-pulse"
-                  />
-                ))}
-              </div>
-            ) : loadError ? (
-              <div className="p-4 bg-red-950 border border-red-800 rounded-lg text-red-300 text-sm">
-                {loadError}
-              </div>
-            ) : availableDates.length === 0 ? (
-              <div className="p-4 bg-gray-900 border border-gray-800 rounded-lg text-gray-400 text-sm">
-                No upcoming sessions are scheduled at this time. Check back soon.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {availableDates.map(({ meeting, dateLabel, timeLabel }) => {
-                  const isSelected = selectedMeeting?.id === meeting.id;
-                  return (
-                    <button
-                      key={meeting.id}
-                      onClick={() => setSelectedMeeting(meeting)}
-                      className={`w-full text-left rounded-xl border px-5 py-4 transition-colors ${
-                        isSelected
-                          ? 'bg-blue-950/60 border-blue-600'
-                          : 'bg-gray-900 border-gray-800 hover:border-gray-600'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                            isSelected ? 'border-blue-500' : 'border-gray-600'
-                          }`}
-                        >
-                          {isSelected && (
-                            <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-white">{dateLabel}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{timeLabel}</div>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {availableDates.length > 0 && (
-              <button
-                onClick={handleContinue}
-                disabled={!selectedMeeting}
-                className="mt-6 w-full py-3 text-sm font-medium bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      {/* Form card */}
+      <div style={{ background: '#F1F5F9', padding: '48px 24px 64px' }}>
+        <div
+          style={{
+            background: '#fff',
+            borderRadius: '12px',
+            padding: '40px 36px',
+            maxWidth: '560px',
+            margin: '0 auto',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+          }}
+        >
+          {/* Nekst logo inside card */}
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <svg width="100" height="30" viewBox="0 0 100 30" fill="none">
+              <text
+                x="0"
+                y="24"
+                fontFamily="'Be Vietnam Pro', system-ui, sans-serif"
+                fontSize="28"
+                fontWeight="700"
+                fill={BRAND_BLUE}
+                letterSpacing="-0.5"
               >
-                Continue
-              </button>
-            )}
+                nekst
+              </text>
+            </svg>
           </div>
-        )}
 
-        {/* Step: Registration Form */}
-        {step === 'form' && selectedDateInfo && (
-          <div>
-            <button
-              onClick={() => setStep('select')}
-              className="text-xs text-gray-500 hover:text-gray-300 mb-6 transition-colors"
-            >
-              &larr; Change date
-            </button>
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: 700,
+              color: NAVY,
+              textAlign: 'center',
+              marginBottom: '28px',
+            }}
+          >
+            Nekst Tips &amp; Tricks Webinar Registration
+          </h2>
 
-            <div className="mb-6 p-4 bg-blue-950/40 border border-blue-800/50 rounded-xl">
-              <div className="text-xs text-blue-400 uppercase tracking-wider mb-1">
-                Selected Session
-              </div>
-              <div className="text-sm font-medium text-white">{selectedDateInfo.dateLabel}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{selectedDateInfo.timeLabel}</div>
-            </div>
+          {/* Step: Select Date */}
+          {step === 'select' && (
+            <div>
+              <p style={{ fontSize: '13px', color: GRAY_TEXT, marginBottom: '16px', fontWeight: 500 }}>
+                Choose a date — all sessions at 2:00 PM Eastern Time
+              </p>
 
-            <h2 className="text-base font-medium text-white mb-5">Your information</h2>
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">First Name</label>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                    placeholder="Jane"
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 placeholder-gray-600"
-                  />
+              {loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        height: '58px',
+                        background: '#F1F5F9',
+                        borderRadius: '6px',
+                        animation: 'pulse 1.5s ease-in-out infinite',
+                      }}
+                    />
+                  ))}
                 </div>
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                    placeholder="Smith"
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 placeholder-gray-600"
-                  />
+              ) : loadError ? (
+                <div style={{ padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', color: '#DC2626', fontSize: '14px' }}>
+                  {loadError}
                 </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-gray-400 block mb-1">Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="jane@example.com"
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 placeholder-gray-600"
-                />
-              </div>
-
-              {submitError && (
-                <div className="p-3 bg-red-950 border border-red-800 rounded-lg text-red-300 text-sm">
-                  {submitError}
+              ) : availableDates.length === 0 ? (
+                <div style={{ padding: '12px 16px', background: '#F8FAFC', border: `1px solid ${INPUT_BORDER}`, borderRadius: '6px', color: GRAY_TEXT, fontSize: '14px' }}>
+                  No upcoming sessions are scheduled at this time. Check back soon.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {availableDates.map(({ meeting, dateLabel, timeLabel }) => {
+                    const isSelected = selectedMeeting?.id === meeting.id;
+                    return (
+                      <button
+                        key={meeting.id}
+                        onClick={() => setSelectedMeeting(meeting)}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '14px 16px',
+                          background: isSelected ? '#EFF6FF' : '#fff',
+                          border: `1.5px solid ${isSelected ? BRAND_BLUE : INPUT_BORDER}`,
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          transition: 'border-color 0.15s, background 0.15s',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div
+                            style={{
+                              width: '16px',
+                              height: '16px',
+                              borderRadius: '50%',
+                              border: `2px solid ${isSelected ? BRAND_BLUE : '#94A3B8'}`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {isSelected && (
+                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: BRAND_BLUE }} />
+                            )}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 600, color: NAVY }}>{dateLabel}</div>
+                            <div style={{ fontSize: '12px', color: GRAY_TEXT, marginTop: '2px' }}>{timeLabel}</div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
+              {availableDates.length > 0 && (
+                <button
+                  onClick={handleContinue}
+                  disabled={!selectedMeeting}
+                  style={{
+                    marginTop: '20px',
+                    width: '100%',
+                    padding: '12px',
+                    background: selectedMeeting ? BRAND_BLUE : '#94A3B8',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    cursor: selectedMeeting ? 'pointer' : 'not-allowed',
+                    fontFamily: 'inherit',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  Continue
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Step: Registration Form */}
+          {step === 'form' && selectedDateInfo && (
+            <div>
               <button
-                type="submit"
-                disabled={submitting}
-                className="mt-2 w-full py-3 text-sm font-medium bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setStep('select')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  color: BRAND_BLUE,
+                  fontFamily: 'inherit',
+                  padding: '0',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
               >
-                {submitting ? 'Registering...' : 'Register Now'}
+                ← Change date
               </button>
 
-              <p className="text-xs text-gray-600 text-center">
-                By registering, you agree to receive emails about this webinar.
-              </p>
-            </form>
-          </div>
-        )}
-
-        {/* Step: Success */}
-        {step === 'success' && selectedDateInfo && (
-          <div className="text-center">
-            <div className="w-14 h-14 bg-green-900/40 border border-green-700 rounded-full flex items-center justify-center mx-auto mb-5">
-              <svg
-                className="w-7 h-7 text-green-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+              <div
+                style={{
+                  padding: '12px 16px',
+                  background: '#EFF6FF',
+                  border: `1px solid #BFDBFE`,
+                  borderRadius: '6px',
+                  marginBottom: '24px',
+                }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-
-            <h2 className="text-xl font-semibold text-white mb-2">You&apos;re registered!</h2>
-            <p className="text-sm text-gray-400 mb-6">
-              See you on {selectedDateInfo.dateLabel} at {selectedDateInfo.timeLabel}.
-            </p>
-
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-left mb-6">
-              <div className="text-xs text-gray-500 uppercase tracking-wider mb-3">
-                Join Information
-              </div>
-
-              <div className="mb-4">
-                <div className="text-xs text-gray-500 mb-1">Topic</div>
-                <div className="text-sm text-white">{selectedDateInfo.meeting.topic}</div>
-              </div>
-
-              <div className="mb-4">
-                <div className="text-xs text-gray-500 mb-1">Date &amp; Time</div>
-                <div className="text-sm text-white">
-                  {selectedDateInfo.dateLabel} at {selectedDateInfo.timeLabel}
+                <div style={{ fontSize: '11px', fontWeight: 600, color: BRAND_BLUE, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>
+                  Selected Session
                 </div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: NAVY }}>{selectedDateInfo.dateLabel}</div>
+                <div style={{ fontSize: '12px', color: GRAY_TEXT, marginTop: '2px' }}>{selectedDateInfo.timeLabel}</div>
               </div>
 
-              {joinUrl && (
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>
+                      First Name<span style={{ color: '#EF4444' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                      placeholder="Jane"
+                      style={inputStyle}
+                      onFocus={(e) => (e.target.style.borderColor = INPUT_FOCUS)}
+                      onBlur={(e) => (e.target.style.borderColor = INPUT_BORDER)}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>
+                      Last Name<span style={{ color: '#EF4444' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                      placeholder="Smith"
+                      style={inputStyle}
+                      onFocus={(e) => (e.target.style.borderColor = INPUT_FOCUS)}
+                      onBlur={(e) => (e.target.style.borderColor = INPUT_BORDER)}
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <div className="text-xs text-gray-500 mb-2">Join Link</div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>
+                    Email<span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="jane@example.com"
+                    style={inputStyle}
+                    onFocus={(e) => (e.target.style.borderColor = INPUT_FOCUS)}
+                    onBlur={(e) => (e.target.style.borderColor = INPUT_BORDER)}
+                  />
+                </div>
+
+                {submitError && (
+                  <div style={{ padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', color: '#DC2626', fontSize: '13px' }}>
+                    {submitError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  style={{
+                    marginTop: '4px',
+                    width: '100%',
+                    padding: '12px',
+                    background: submitting ? '#94A3B8' : BRAND_BLUE,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  {submitting ? 'Registering...' : 'Secure your spot'}
+                </button>
+
+                <p style={{ fontSize: '12px', color: '#94A3B8', textAlign: 'center', margin: 0 }}>
+                  By registering, you agree to receive emails about this webinar.
+                </p>
+              </form>
+            </div>
+          )}
+
+          {/* Step: Success */}
+          {step === 'success' && selectedDateInfo && (
+            <div style={{ textAlign: 'center' }}>
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  background: '#D1FAE5',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 20px',
+                }}
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+
+              <h2 style={{ fontSize: '20px', fontWeight: 700, color: NAVY, marginBottom: '8px' }}>
+                You&apos;re registered!
+              </h2>
+              <p style={{ fontSize: '14px', color: GRAY_TEXT, marginBottom: '28px', lineHeight: 1.6 }}>
+                See you on {selectedDateInfo.dateLabel} at {selectedDateInfo.timeLabel}.
+              </p>
+
+              <div
+                style={{
+                  background: '#F8FAFC',
+                  border: `1px solid ${INPUT_BORDER}`,
+                  borderRadius: '8px',
+                  padding: '20px',
+                  textAlign: 'left',
+                  marginBottom: '16px',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 600, color: GRAY_TEXT, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '14px' }}>
+                  Session Details
+                </div>
+
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '12px', color: GRAY_TEXT, marginBottom: '3px' }}>Topic</div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: NAVY }}>{selectedDateInfo.meeting.topic}</div>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontSize: '12px', color: GRAY_TEXT, marginBottom: '3px' }}>Date &amp; Time</div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: NAVY }}>
+                    {selectedDateInfo.dateLabel} at {selectedDateInfo.timeLabel}
+                  </div>
+                </div>
+
+                {joinUrl && (
                   <a
                     href={joinUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full text-center py-2.5 text-sm font-medium bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '11px',
+                      background: BRAND_BLUE,
+                      color: '#fff',
+                      borderRadius: '6px',
+                      textAlign: 'center',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      textDecoration: 'none',
+                    }}
                   >
                     Join Meeting
                   </a>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <p className="text-xs text-gray-600">
-              Save the join link above — a confirmation email may also be on its way.
-            </p>
-          </div>
-        )}
+              <p style={{ fontSize: '12px', color: '#94A3B8' }}>
+                Save the join link above — a confirmation email may be on its way.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
