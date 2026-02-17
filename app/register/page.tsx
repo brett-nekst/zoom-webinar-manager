@@ -44,10 +44,14 @@ export default function RegisterPage() {
         }
         const meetings: ZoomMeeting[] = await res.json();
 
-        // Filter to only upcoming meetings (next 3 Wednesdays logic)
+        // Filter to only upcoming "Nekst Tips & Tricks Webinar" meetings
         const now = new Date();
         const upcoming = meetings
-          .filter((m) => new Date(m.start_time) > now)
+          .filter(
+            (m) =>
+              new Date(m.start_time) > now &&
+              m.topic.toLowerCase().includes('nekst tips')
+          )
           .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
           .slice(0, 3)
           .map((m) => ({
