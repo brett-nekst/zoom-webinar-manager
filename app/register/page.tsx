@@ -158,21 +158,13 @@ export default function RegisterPage() {
           textAlign: 'center',
         }}
       >
-        {/* Nekst wordmark */}
+        {/* Nekst logo */}
         <div style={{ marginBottom: '28px' }}>
-          <svg width="120" height="36" viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <text
-              x="0"
-              y="28"
-              fontFamily="'Be Vietnam Pro', system-ui, sans-serif"
-              fontSize="32"
-              fontWeight="700"
-              fill={BRAND_BLUE}
-              letterSpacing="-1"
-            >
-              nekst
-            </text>
-          </svg>
+          <img
+            src="https://cdn.prod.website-files.com/6686ec1023f507e468f04ac6/668707e8a00a5ffa6b3600cb_nekst-logo-color.svg"
+            alt="Nekst"
+            style={{ height: '48px', display: 'inline-block' }}
+          />
         </div>
 
         <p style={{ fontSize: '13px', fontWeight: 600, color: BRAND_BLUE, marginBottom: '10px', letterSpacing: '0.02em' }}>
@@ -210,19 +202,11 @@ export default function RegisterPage() {
         >
           {/* Nekst logo inside card */}
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <svg width="100" height="30" viewBox="0 0 100 30" fill="none">
-              <text
-                x="0"
-                y="24"
-                fontFamily="'Be Vietnam Pro', system-ui, sans-serif"
-                fontSize="28"
-                fontWeight="700"
-                fill={BRAND_BLUE}
-                letterSpacing="-0.5"
-              >
-                nekst
-              </text>
-            </svg>
+            <img
+              src="https://cdn.prod.website-files.com/6686ec1023f507e468f04ac6/668707e8a00a5ffa6b3600cb_nekst-logo-color.svg"
+              alt="Nekst"
+              style={{ height: '56px', display: 'inline-block' }}
+            />
           </div>
 
           <h2
