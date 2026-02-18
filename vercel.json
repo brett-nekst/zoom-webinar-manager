@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/create-weekly-meetings",
-      "schedule": "0 13 * * 3"
+      "schedule": "0 13 * * 4"
     }
   ]
 }
