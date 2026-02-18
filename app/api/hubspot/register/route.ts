@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       { name: 'email', value: email },
     ];
     if (company) formFields.push({ name: 'company', value: company });
-    if (role) formFields.push({ name: 'what_best_describes_your_role_', value: role });
+    if (role) formFields.push({ name: 'type_mktg', value: role });
 
     const formRes = await fetch(
       `https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`,
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       lastname: lastName,
     };
     if (company) contactProperties.company = company;
-    if (role) contactProperties.what_best_describes_your_role_ = role;
+    if (role) contactProperties.type_mktg = role;
 
     if (contactId) {
       // 3a. Update existing contact
