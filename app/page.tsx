@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface ZoomMeeting {
   id: number;
@@ -42,6 +43,7 @@ function getNextWednesdays(count: number): { date: string; label: string }[] {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [slots, setSlots] = useState<WednesdaySlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState<string | null>(null);
@@ -170,6 +172,11 @@ export default function Home() {
     }
   };
 
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+  };
+
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopied(key);
@@ -193,13 +200,21 @@ export default function Home() {
             <h1 className="text-xl font-semibold text-white">Zoom Webinar Manager</h1>
             <p className="text-sm text-gray-400 mt-0.5">Upcoming Wednesday meetings at 2:00 PM ET</p>
           </div>
-          <button
-            onClick={loadMeetings}
-            disabled={loading}
-            className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-md transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={loadMeetings}
+              disabled={loading}
+              className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-md transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-md transition-colors text-gray-400 hover:text-white"
+            >
+              Log out
+            </button>
+          </div>
         </div>
       </div>
 
