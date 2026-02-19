@@ -117,6 +117,7 @@ export default function RegisterPage() {
           role,
           meetingId: selectedMeeting.id,
           meetingDate: selected?.dateLabel || '',
+          meetingStartTime: selectedMeeting.start_time,
           meetingTopic: selectedMeeting.topic,
           joinUrl: selectedMeeting.join_url,
         }),

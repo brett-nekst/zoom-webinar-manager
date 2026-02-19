@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
       role,
       meetingId,
       meetingDate,
+      meetingStartTime,
       meetingTopic,
       joinUrl,
     } = await request.json();
@@ -89,6 +90,12 @@ export async function POST(request: NextRequest) {
     };
     if (company) contactProperties.company = company;
     if (role) contactProperties.type_mktg = role;
+
+    // Set webinar date for workflow triggers (YYYY-MM-DD format)
+    if (meetingStartTime) {
+      const webinarDate = meetingStartTime.split('T')[0];
+      contactProperties.webinar_date = webinarDate;
+    }
 
     if (contactId) {
       // 3a. Update existing contact
