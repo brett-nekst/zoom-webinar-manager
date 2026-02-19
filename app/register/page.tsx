@@ -535,16 +535,30 @@ export default function RegisterPage() {
                   <div style={{ fontSize: '14px', fontWeight: 500, color: NAVY }}>{selectedDateInfo.meeting.topic}</div>
                 </div>
 
-                <div style={{ marginBottom: '16px' }}>
+                <div>
                   <div style={{ fontSize: '12px', color: GRAY_TEXT, marginBottom: '3px' }}>Date &amp; Time</div>
                   <div style={{ fontSize: '14px', fontWeight: 500, color: NAVY }}>
                     {selectedDateInfo.dateLabel} at {selectedDateInfo.timeLabel}
                   </div>
                 </div>
+              </div>
 
-                {joinUrl && (
+              {joinUrl && (() => {
+                // Generate calendar link
+                const meeting = selectedDateInfo.meeting;
+                const startDate = new Date(meeting.start_time);
+                const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
+
+                // Format dates for Google Calendar (YYYYMMDDTHHmmssZ)
+                const formatGoogleDate = (date: Date) => {
+                  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+                };
+
+                const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(meeting.topic)}&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}&details=${encodeURIComponent(`Join URL: ${joinUrl}`)}&location=${encodeURIComponent(joinUrl)}`;
+
+                return (
                   <a
-                    href={joinUrl}
+                    href={googleCalendarUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -558,16 +572,13 @@ export default function RegisterPage() {
                       fontSize: '14px',
                       fontWeight: 600,
                       textDecoration: 'none',
+                      marginTop: '16px',
                     }}
                   >
-                    Join Meeting
+                    Add to Calendar
                   </a>
-                )}
-              </div>
-
-              <p style={{ fontSize: '12px', color: '#94A3B8' }}>
-                Save the join link above — a confirmation email may be on its way.
-              </p>
+                );
+              })()}
             </div>
           )}
         </div>
