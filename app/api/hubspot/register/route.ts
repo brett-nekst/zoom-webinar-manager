@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const contactProperties: Record<string, string> = {
+    const contactProperties: Record<string, string | number> = {
       firstname: firstName,
       lastname: lastName,
     };
@@ -94,7 +94,8 @@ export async function POST(request: NextRequest) {
     // Set webinar date for workflow triggers (Unix timestamp in milliseconds)
     if (meetingStartTime) {
       const timestamp = new Date(meetingStartTime).getTime();
-      contactProperties.webinar_date = timestamp.toString();
+      contactProperties.webinar_date = timestamp;
+      console.log('Setting webinar_date:', timestamp, 'for date:', meetingStartTime);
     }
 
     if (contactId) {
