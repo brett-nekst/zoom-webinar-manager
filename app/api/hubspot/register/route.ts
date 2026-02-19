@@ -91,10 +91,10 @@ export async function POST(request: NextRequest) {
     if (company) contactProperties.company = company;
     if (role) contactProperties.type_mktg = role;
 
-    // Set webinar date for workflow triggers (YYYY-MM-DD format)
+    // Set webinar date for workflow triggers (Unix timestamp in milliseconds)
     if (meetingStartTime) {
-      const webinarDate = meetingStartTime.split('T')[0];
-      contactProperties.webinar_date = webinarDate;
+      const timestamp = new Date(meetingStartTime).getTime();
+      contactProperties.webinar_date = timestamp.toString();
     }
 
     if (contactId) {
