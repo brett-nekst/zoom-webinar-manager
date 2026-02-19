@@ -98,6 +98,12 @@ export async function POST(request: NextRequest) {
       console.log('Setting webinar_date:', timestamp, 'for date:', meetingStartTime);
     }
 
+    // Set Zoom webinar join link
+    if (joinUrl) {
+      contactProperties.zoom_webinar_joinlink = joinUrl;
+      console.log('Setting zoom_webinar_joinlink:', joinUrl);
+    }
+
     if (contactId) {
       // 3a. Update existing contact
       await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`, {
