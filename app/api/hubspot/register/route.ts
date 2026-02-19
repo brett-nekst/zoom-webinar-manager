@@ -100,8 +100,8 @@ export async function POST(request: NextRequest) {
 
     // Set Zoom webinar join link
     if (joinUrl) {
-      contactProperties.zoom_webinar_joinlink = joinUrl;
-      console.log('Setting zoom_webinar_joinlink:', joinUrl);
+      contactProperties.webinar_link = joinUrl;
+      console.log('Setting webinar_link:', joinUrl);
     }
 
     if (contactId) {
