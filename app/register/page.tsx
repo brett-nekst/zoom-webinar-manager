@@ -543,9 +543,10 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {joinUrl && (() => {
+              {selectedDateInfo && (() => {
                 // Generate calendar link
                 const meeting = selectedDateInfo.meeting;
+                const meetingJoinUrl = joinUrl || meeting.join_url;
                 const startDate = new Date(meeting.start_time);
                 const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
 
@@ -554,7 +555,7 @@ export default function RegisterPage() {
                   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
                 };
 
-                const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(meeting.topic)}&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}&details=${encodeURIComponent(`Join URL: ${joinUrl}`)}&location=${encodeURIComponent(joinUrl)}`;
+                const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(meeting.topic)}&dates=${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}&details=${encodeURIComponent(`Join URL: ${meetingJoinUrl}`)}&location=${encodeURIComponent(meetingJoinUrl)}`;
 
                 return (
                   <a
