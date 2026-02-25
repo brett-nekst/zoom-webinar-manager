@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       lastname: lastName,
     };
     if (company) contactProperties.company = company;
-    if (role) contactProperties.type_mktg = role;
+    // Note: type_mktg (role) is already submitted via form, skip Contact API to avoid validation errors
 
     // Set webinar date for workflow triggers (Unix timestamp in milliseconds)
     if (meetingStartTime) {
