@@ -32,7 +32,9 @@ export async function POST(request: NextRequest) {
       'Content-Type': 'application/json',
     };
 
-    // 1. Submit to HubSpot Forms API (records form submission activity)
+    // 1. Submit to HubSpot Forms API (records form submission activity and triggers workflows)
+    // NOTE: Only submitting basic contact fields to the form
+    // Webinar-specific fields (date, time, link) are set via Contact API below
     const formFields: { name: string; value: string }[] = [
       { name: 'firstname', value: firstName },
       { name: 'lastname', value: lastName },
@@ -41,25 +43,59 @@ export async function POST(request: NextRequest) {
     if (company) formFields.push({ name: 'company', value: company });
     if (role) formFields.push({ name: 'type_mktg', value: role });
 
+    const formSubmissionPayload = {
+      fields: formFields,
+      context: {
+        pageUri: 'https://zoom-webinar-manager.vercel.app/register',
+        pageName: 'Nekst Tips & Tricks Webinar Registration',
+      },
+    };
+
+    console.log('Submitting to HubSpot form:', formId);
+    console.log('Portal ID:', portalId);
+    console.log('Form fields being submitted:', formFields.map(f => `${f.name}: ${f.value}`));
+    console.log('Full payload:', JSON.stringify(formSubmissionPayload, null, 2));
+
     const formRes = await fetch(
       `https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fields: formFields,
-          context: {
-            pageUri: 'https://zoom-webinar-manager.vercel.app/register',
-            pageName: 'Nekst Tips & Tricks Webinar Registration',
-          },
-        }),
+        body: JSON.stringify(formSubmissionPayload),
       }
     );
 
     if (!formRes.ok) {
       const err = await formRes.text();
-      console.error('HubSpot form submission error:', err);
-      // Non-fatal — fall through to Contacts API
+      console.error('❌ HubSpot form submission FAILED');
+      console.error('Status code:', formRes.status);
+      console.error('Status text:', formRes.statusText);
+      console.error('Response body:', err);
+      console.error('⚠️  WORKFLOWS WILL NOT TRIGGER - Form submission failed!');
+
+      // Try to parse error for more details
+      try {
+        const errorData = JSON.parse(err);
+        console.error('Parsed error details:', JSON.stringify(errorData, null, 2));
+
+        // Check for specific error types
+        if (errorData.errors) {
+          errorData.errors.forEach((error: any, index: number) => {
+            console.error(`Error ${index + 1}:`, error.message || error);
+            if (error.errorType) console.error(`  Type: ${error.errorType}`);
+            if (error.propertyName) console.error(`  Property: ${error.propertyName}`);
+          });
+        }
+      } catch (parseError) {
+        console.error('Could not parse error JSON - raw error:', err);
+      }
+
+      // Continue anyway - we'll still create/update the contact directly
+    } else {
+      console.log('✅ Successfully submitted to HubSpot form');
+      console.log('✅ Workflows should trigger for this registration');
+      const formData = await formRes.json();
+      console.log('Form submission response:', JSON.stringify(formData, null, 2));
     }
 
     // 2. Search for existing contact by email
@@ -81,7 +117,14 @@ export async function POST(request: NextRequest) {
       const searchData = await searchRes.json();
       if (searchData.results?.length > 0) {
         contactId = searchData.results[0].id;
+        console.log('Found existing contact:', contactId);
+      } else {
+        console.log('No existing contact found for email:', email);
       }
+    } else {
+      const searchError = await searchRes.text();
+      console.error('HubSpot contact search error:', searchError);
+      // Continue anyway and try to create the contact
     }
 
     const contactProperties: Record<string, string | number> = {
@@ -106,13 +149,25 @@ export async function POST(request: NextRequest) {
 
     if (contactId) {
       // 3a. Update existing contact
-      await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`, {
+      console.log('Updating existing contact:', contactId);
+      const updateRes = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`, {
         method: 'PATCH',
         headers: authHeaders,
         body: JSON.stringify({ properties: contactProperties }),
       });
+
+      if (!updateRes.ok) {
+        const updateError = await updateRes.text();
+        console.error('HubSpot contact update error:', updateError);
+        // Non-fatal - continue with registration even if update fails
+      } else {
+        console.log('Successfully updated contact:', contactId);
+      }
     } else {
       // 3b. Create new contact
+      console.log('Creating new contact with email:', email);
+      console.log('Contact properties:', { email, ...contactProperties });
+
       const createRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
         method: 'POST',
         headers: authHeaders,
@@ -124,11 +179,28 @@ export async function POST(request: NextRequest) {
       if (!createRes.ok) {
         const err = await createRes.text();
         console.error('HubSpot contact creation error:', err);
-        return NextResponse.json({ error: 'Failed to create HubSpot contact' }, { status: 500 });
+        console.error('Failed to create contact with properties:', { email, ...contactProperties });
+
+        // Try to parse the error response to provide more details
+        let errorMessage = 'Failed to create HubSpot contact';
+        try {
+          const errorData = JSON.parse(err);
+          if (errorData.message) {
+            errorMessage += ': ' + errorData.message;
+          }
+          if (errorData.errors) {
+            console.error('Detailed errors:', errorData.errors);
+          }
+        } catch (parseError) {
+          console.error('Could not parse error response:', err);
+        }
+
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
       }
 
       const createData = await createRes.json();
       contactId = createData.id;
+      console.log('Successfully created new contact:', contactId);
     }
 
     // 4. Add a note with meeting registration details
