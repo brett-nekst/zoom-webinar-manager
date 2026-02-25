@@ -185,7 +185,7 @@ export default function RegisterPage() {
             maxWidth: '520px',
           }}
         >
-          Join us live for a comprehensive webinar on all things Nekst
+          Register for a Nekst Webinar
         </h1>
         <p style={{ fontSize: '15px', color: GRAY_TEXT, maxWidth: '480px', margin: '0 auto', lineHeight: 1.6 }}>
           Dive into Nekst, best practices for accelerating your workflows, and building a foundation
