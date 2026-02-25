@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Map user-friendly role values to HubSpot dropdown values
+function mapRoleToHubSpot(role: string): string {
+  const roleMap: Record<string, string> = {
+    'Individual Agent': 'agent-solo',
+    'Real Estate Team': 'agent-team',
+    'Independent Transaction Coordinator': 'tc-solo',
+    "Team of TC's": 'tc-team',
+    'Other': 'Other',
+  };
+  return roleMap[role] || 'Other';
+}
+
 export async function POST(request: NextRequest) {
   try {
     const {
@@ -41,7 +53,10 @@ export async function POST(request: NextRequest) {
       { name: 'email', value: email },
     ];
     if (company) formFields.push({ name: 'company', value: company });
-    if (role) formFields.push({ name: 'type_mktg', value: role });
+    if (role) {
+      const mappedRole = mapRoleToHubSpot(role);
+      formFields.push({ name: 'type_mktg', value: mappedRole });
+    }
 
     const formSubmissionPayload = {
       fields: formFields,
@@ -132,7 +147,10 @@ export async function POST(request: NextRequest) {
       lastname: lastName,
     };
     if (company) contactProperties.company = company;
-    // Note: type_mktg (role) is already submitted via form, skip Contact API to avoid validation errors
+    if (role) {
+      const mappedRole = mapRoleToHubSpot(role);
+      contactProperties.type_mktg = mappedRole;
+    }
 
     // Set webinar date for workflow triggers (Unix timestamp in milliseconds)
     if (meetingStartTime) {
