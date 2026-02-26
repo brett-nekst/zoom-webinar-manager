@@ -61,8 +61,15 @@ export async function POST(request: NextRequest) {
     const formSubmissionPayload = {
       fields: formFields,
       context: {
-        pageUri: 'https://zoom-webinar-manager.vercel.app/register',
-        pageName: 'Nekst Tips & Tricks Webinar Registration',
+        pageUri: 'https://webinar.nekst.com/register',
+        pageName: 'Nekst Bi-Weekly Webinar Registration',
+        hutk: request.cookies.get('hubspotutk')?.value, // HubSpot tracking cookie
+      },
+      legalConsentOptions: {
+        consent: {
+          consentToProcess: true,
+          text: 'I agree to allow Nekst to store and process my personal data.',
+        },
       },
     };
 
