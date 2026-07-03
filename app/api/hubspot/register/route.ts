@@ -276,6 +276,8 @@ export async function POST(request: NextRequest) {
       registrantName: `${firstName} ${lastName}`,
       email,
       topics: topics || '',
+      company: company || '',
+      role: role || '',
     });
 
     return NextResponse.json({ success: true, joinUrl });
