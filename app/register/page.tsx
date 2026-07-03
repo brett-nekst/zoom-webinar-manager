@@ -72,7 +72,7 @@ export default function RegisterPage() {
             return isWebinarTitle && weekday === 'Wednesday';
           })
           .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
-          .slice(0, 3)
+          .slice(0, 4)
           .map((m) => ({
             meeting: m,
             dateLabel: new Date(m.start_time).toLocaleDateString('en-US', {
@@ -82,12 +82,22 @@ export default function RegisterPage() {
               day: 'numeric',
               timeZone: 'America/New_York',
             }),
-            timeLabel: new Date(m.start_time).toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              timeZoneName: 'short',
-              timeZone: 'America/New_York',
-            }),
+            timeLabel: (() => {
+              const start = new Date(m.start_time);
+              const end = new Date(start.getTime() + (m.duration || 60) * 60 * 1000);
+              const startStr = start.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                timeZone: 'America/New_York',
+              });
+              const endStr = end.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                timeZoneName: 'short',
+                timeZone: 'America/New_York',
+              });
+              return `${startStr} – ${endStr}`;
+            })(),
           }));
 
         setAvailableDates(upcoming);
@@ -240,7 +250,7 @@ export default function RegisterPage() {
           {step === 'select' && (
             <div>
               <p style={{ fontSize: '13px', color: GRAY_TEXT, marginBottom: '16px', fontWeight: 500 }}>
-                Choose a date — all sessions at 1:00 PM Eastern Time
+                Choose a date — all sessions 1:00 – 2:00 PM Eastern Time
               </p>
 
               {loading ? (
