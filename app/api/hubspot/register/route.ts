@@ -168,6 +168,11 @@ export async function POST(request: NextRequest) {
       console.log('Setting webinar_date:', timestamp, 'for date:', meetingStartTime);
     }
 
+    // Set the topics the registrant wants covered (HubSpot contact property)
+    if (topics) {
+      contactProperties.webinar_topics = topics;
+    }
+
     // Set Zoom webinar join link
     if (joinUrl) {
       contactProperties.webinar_link = joinUrl;
