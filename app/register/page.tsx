@@ -58,11 +58,19 @@ export default function RegisterPage() {
 
         const now = new Date();
         const upcoming = meetings
-          .filter(
-            (m) =>
-              new Date(m.start_time) > now &&
-              m.topic.toLowerCase().includes('nekst')
-          )
+          .filter((m) => {
+            if (new Date(m.start_time) <= now) return false;
+            // Only the weekly webinars: a known webinar title AND a Wednesday.
+            // This excludes stray "nekst" meetings on other weekdays.
+            const topic = m.topic.toLowerCase();
+            const isWebinarTitle =
+              topic.includes('user training') || topic.includes('tips & tricks');
+            const weekday = new Date(m.start_time).toLocaleDateString('en-US', {
+              weekday: 'long',
+              timeZone: 'America/New_York',
+            });
+            return isWebinarTitle && weekday === 'Wednesday';
+          })
           .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
           .slice(0, 3)
           .map((m) => ({
