@@ -303,6 +303,7 @@ export default function RegisterPage() {
                             )}
                           </div>
                           <div>
+                            <div style={{ fontSize: '12px', fontWeight: 600, color: BRAND_BLUE, marginBottom: '3px' }}>{meeting.topic}</div>
                             <div style={{ fontSize: '14px', fontWeight: 600, color: NAVY }}>{dateLabel}</div>
                             <div style={{ fontSize: '12px', color: GRAY_TEXT, marginTop: '2px' }}>{timeLabel}</div>
                           </div>
