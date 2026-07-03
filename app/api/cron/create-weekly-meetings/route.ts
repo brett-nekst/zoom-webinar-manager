@@ -53,7 +53,9 @@ function formatDateLabel(dateStr: string): string {
   });
 }
 
-// GET - Called by Vercel Cron every Wednesday at 8 AM ET
+// GET - Called weekly by Vercel Cron (schedule "0 13 * * 4" in vercel.json:
+// Thursdays 13:00 UTC). Regardless of run-day, it ensures the next 3
+// Wednesdays each have a meeting, skipping any that already exist.
 export async function GET(request: NextRequest) {
   // Verify this is being called by Vercel Cron (or authorized manually)
   const authHeader = request.headers.get('authorization');
