@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getWebinarContent } from '@/app/lib/webinarType';
 
 async function getZoomToken(): Promise<string> {
   const accountId = process.env.ZOOM_ACCOUNT_ID;
@@ -97,7 +98,7 @@ export async function GET(request: NextRequest) {
         continue;
       }
 
-      const topic = 'Nekst Tips & Tricks Webinar';
+      const { topic, agenda } = getWebinarContent(date);
 
       const createRes = await fetch(`https://api.zoom.us/v2/users/${userId}/meetings`, {
         method: 'POST',
@@ -111,6 +112,7 @@ export async function GET(request: NextRequest) {
           start_time: `${date}T13:00:00`,
           duration: 60,
           timezone: 'America/New_York',
+          agenda,
           settings: {
             host_video: true,
             participant_video: false,

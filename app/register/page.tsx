@@ -61,7 +61,7 @@ export default function RegisterPage() {
           .filter(
             (m) =>
               new Date(m.start_time) > now &&
-              m.topic.toLowerCase().includes('nekst tips')
+              m.topic.toLowerCase().includes('nekst')
           )
           .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
           .slice(0, 3)

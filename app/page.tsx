@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { getWebinarContent } from '@/app/lib/webinarType';
 
 interface ZoomMeeting {
   id: number;
@@ -94,12 +95,16 @@ export default function Home() {
       setSlots(newSlots);
 
       const defaultTopics: Record<string, string> = {};
+      const defaultAgendas: Record<string, string> = {};
       const defaultDurations: Record<string, string> = {};
       wednesdays.forEach((w) => {
-        defaultTopics[w.date] = 'Nekst Tips & Tricks Webinar';
+        const content = getWebinarContent(w.date);
+        defaultTopics[w.date] = content.topic;
+        defaultAgendas[w.date] = content.agenda;
         defaultDurations[w.date] = '60';
       });
       setTopics((prev) => ({ ...defaultTopics, ...prev }));
+      setAgendas((prev) => ({ ...defaultAgendas, ...prev }));
       setDurations((prev) => ({ ...defaultDurations, ...prev }));
     } catch (err) {
       setError('Failed to connect to Zoom API');
@@ -132,10 +137,10 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          topic: topics[slot.date] || 'Nekst Tips & Tricks Webinar',
+          topic: topics[slot.date] || getWebinarContent(slot.date).topic,
           date: slot.date,
           duration: parseInt(durations[slot.date] || '60'),
-          agenda: agendas[slot.date] || '',
+          agenda: agendas[slot.date] || getWebinarContent(slot.date).agenda,
         }),
       });
       if (!res.ok) {
