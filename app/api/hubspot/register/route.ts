@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { appendRegistrationRow } from '@/app/lib/googleSheets';
 
 // Map user-friendly role values to HubSpot dropdown values
 function mapRoleToHubSpot(role: string): string {
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest) {
       email,
       company,
       role,
+      topics,
       meetingId,
       meetingDate,
       meetingStartTime,
@@ -230,13 +232,17 @@ export async function POST(request: NextRequest) {
 
     // 4. Add a note with meeting registration details
     if (contactId) {
-      const noteBody = [
+      const noteLines = [
         'Registered for Nekst Tips & Tricks Webinar',
         `Date: ${meetingDate}`,
         `Topic: ${meetingTopic}`,
         `Join URL: ${joinUrl}`,
         `Meeting ID: ${meetingId}`,
-      ].join('\n');
+      ];
+      if (topics) {
+        noteLines.push(`Topics to cover: ${topics}`);
+      }
+      const noteBody = noteLines.join('\n');
 
       const noteRes = await fetch('https://api.hubapi.com/crm/v3/objects/notes', {
         method: 'POST',
@@ -259,6 +265,18 @@ export async function POST(request: NextRequest) {
         console.error('HubSpot note creation failed:', await noteRes.text());
       }
     }
+
+    // Append to the master Google Sheet (non-fatal — never blocks registration).
+    const registrationDateTime = new Date().toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+    });
+    await appendRegistrationRow({
+      registrationDateTime,
+      webinarDate: meetingDate || '',
+      registrantName: `${firstName} ${lastName}`,
+      email,
+      topics: topics || '',
+    });
 
     return NextResponse.json({ success: true, joinUrl });
   } catch (error) {
