@@ -81,6 +81,11 @@ export async function POST(request: NextRequest) {
     // Pass timezone separately so Zoom handles DST correctly
     const startTime = `${date}T13:00:00`;
 
+    // Adrian (or whoever hosts) is added as an alternative host so the meeting
+    // appears in her Zoom and she can start/run it. Must be a licensed user on
+    // the same Zoom account. Defaults to adrian@nekst.com if the env var is unset.
+    const alternativeHost = process.env.ALTERNATIVE_HOST_EMAIL || 'adrian@nekst.com';
+
     const meetingPayload = {
       topic,
       type: 2, // Scheduled meeting
@@ -97,6 +102,7 @@ export async function POST(request: NextRequest) {
         approval_type: 2, // No registration required (manual invite/link sharing)
         audio: 'both',
         auto_recording: 'none',
+        alternative_hosts: alternativeHost,
       },
     };
 
