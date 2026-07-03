@@ -74,7 +74,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
 
-    const wednesdays = getNextWednesdays(3);
+    const wednesdays = getNextWednesdays(4);
 
     // Auto-fill the alternating topic/agenda defaults for each slot. This is a
     // pure function of the date, so it runs regardless of whether the Zoom API

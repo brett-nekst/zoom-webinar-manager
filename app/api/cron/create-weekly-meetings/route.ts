@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const token = await getZoomToken();
-    const targetDates = getNextWednesdays(3);
+    const targetDates = getNextWednesdays(4);
 
     const userId = process.env.ZOOM_USER_ID || 'me';
 
