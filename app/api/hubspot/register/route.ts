@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       joinUrl,
     } = await request.json();
 
-    if (!firstName || !lastName || !email || !meetingId) {
+    if (!firstName || !lastName || !email || !meetingId || !topics) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 

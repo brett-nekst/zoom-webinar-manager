@@ -478,11 +478,12 @@ export default function RegisterPage() {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>
-                    What information are you hoping to cover? <span style={{ color: GRAY_TEXT, fontWeight: 400 }}>(optional)</span>
+                    What are you hoping we cover?<span style={{ color: '#EF4444' }}>*</span>
                   </label>
                   <textarea
                     value={topics}
                     onChange={(e) => setTopics(e.target.value)}
+                    required
                     placeholder="e.g. setting up my first workflow, syncing with my email, best practices for reminders..."
                     rows={4}
                     style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
