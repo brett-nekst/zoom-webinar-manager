@@ -41,6 +41,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
+  const [topics, setTopics] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [joinUrl, setJoinUrl] = useState<string | null>(null);
@@ -115,6 +116,7 @@ export default function RegisterPage() {
           email,
           company,
           role,
+          topics,
           meetingId: selectedMeeting.id,
           meetingDate: selected?.dateLabel || '',
           meetingStartTime: selectedMeeting.start_time,
@@ -453,6 +455,21 @@ export default function RegisterPage() {
                     <option value="Team of TC&apos;s">Team of TC&apos;s</option>
                     <option value="Other">Other</option>
                   </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: NAVY, marginBottom: '6px' }}>
+                    What information are you hoping to cover? <span style={{ color: GRAY_TEXT, fontWeight: 400 }}>(optional)</span>
+                  </label>
+                  <textarea
+                    value={topics}
+                    onChange={(e) => setTopics(e.target.value)}
+                    placeholder="e.g. setting up my first workflow, syncing with my email, best practices for reminders..."
+                    rows={4}
+                    style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
+                    onFocus={(e) => (e.target.style.borderColor = INPUT_FOCUS)}
+                    onBlur={(e) => (e.target.style.borderColor = INPUT_BORDER)}
+                  />
                 </div>
 
                 {submitError && (
