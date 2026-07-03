@@ -72,6 +72,8 @@ export async function GET(request: NextRequest) {
     const targetDates = getNextWednesdays(4);
 
     const userId = process.env.ZOOM_USER_ID || 'me';
+    // Added as alternative host on every meeting (defaults to adrian@nekst.com).
+    const alternativeHost = process.env.ALTERNATIVE_HOST_EMAIL || 'adrian@nekst.com';
 
     // Fetch all existing scheduled meetings
     const listRes = await fetch(
@@ -124,6 +126,7 @@ export async function GET(request: NextRequest) {
             approval_type: 2,
             audio: 'both',
             auto_recording: 'none',
+            alternative_hosts: alternativeHost,
           },
         }),
       });
