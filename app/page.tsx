@@ -198,7 +198,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-white">Zoom Webinar Manager</h1>
-            <p className="text-sm text-gray-400 mt-0.5">Upcoming Wednesday meetings at 2:00 PM ET</p>
+            <p className="text-sm text-gray-400 mt-0.5">Upcoming Wednesday meetings at 1:00 PM ET</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -417,7 +417,7 @@ export default function Home() {
         )}
 
         <p className="text-center text-xs text-gray-600 mt-10">
-          Meetings are created in your Zoom account at 2:00 PM Eastern Time.
+          Meetings are created in your Zoom account at 1:00 PM Eastern Time.
         </p>
       </div>
     </div>

@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
         body: JSON.stringify({
           topic,
           type: 2,
-          start_time: `${date}T14:00:00`,
+          start_time: `${date}T13:00:00`,
           duration: 60,
           timezone: 'America/New_York',
           settings: {

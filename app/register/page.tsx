@@ -232,7 +232,7 @@ export default function RegisterPage() {
           {step === 'select' && (
             <div>
               <p style={{ fontSize: '13px', color: GRAY_TEXT, marginBottom: '16px', fontWeight: 500 }}>
-                Choose a date — all sessions at 2:00 PM Eastern Time
+                Choose a date — all sessions at 1:00 PM Eastern Time
               </p>
 
               {loading ? (
