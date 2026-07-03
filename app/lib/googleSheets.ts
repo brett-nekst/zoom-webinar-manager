@@ -41,6 +41,27 @@ export async function appendRegistrationRow(row: RegistrationRow): Promise<void>
 
     const sheets = google.sheets({ version: 'v4', auth });
 
+    // Dedup: skip if a row already exists for this email + webinar date.
+    // Guards against double-clicks, retries, refreshes, and multiple tabs.
+    // Columns: A=RegDateTime B=WebinarDate C=Name D=Email E=Topics F=Company G=Role
+    const existing = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: SHEET_RANGE,
+    });
+    const rows = existing.data.values || [];
+    const emailKey = row.email.trim().toLowerCase();
+    const dateKey = row.webinarDate.trim().toLowerCase();
+    const isDuplicate = rows.some((r) => {
+      const existingDate = (r[1] || '').trim().toLowerCase(); // column B
+      const existingEmail = (r[3] || '').trim().toLowerCase(); // column D
+      return existingEmail === emailKey && existingDate === dateKey;
+    });
+
+    if (isDuplicate) {
+      console.log('↩️  Skipping duplicate sheet row for:', row.email, '/', row.webinarDate);
+      return;
+    }
+
     await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
       range: SHEET_RANGE,

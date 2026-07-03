@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ZoomMeeting {
   id: number;
@@ -45,6 +45,9 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [joinUrl, setJoinUrl] = useState<string | null>(null);
+  // Synchronous guard: blocks a second submit immediately, before React re-renders
+  // the disabled button (prevents rapid double-clicks from firing duplicate requests).
+  const submitLock = useRef(false);
 
   useEffect(() => {
     async function fetchMeetings() {
@@ -118,6 +121,9 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMeeting) return;
+    // Ignore a second submit that fires before the button visually disables.
+    if (submitLock.current) return;
+    submitLock.current = true;
 
     setSubmitting(true);
     setSubmitError(null);
@@ -155,6 +161,7 @@ export default function RegisterPage() {
       setSubmitError('Registration failed. Please try again.');
     } finally {
       setSubmitting(false);
+      submitLock.current = false; // release so a genuine retry is allowed after an error
     }
   };
 
