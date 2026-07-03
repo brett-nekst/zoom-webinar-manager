@@ -77,9 +77,9 @@ export async function POST(request: NextRequest) {
 
     const token = await getZoomToken();
 
-    // Build start_time: date at 14:00 Eastern
+    // Build start_time: date at 13:00 Eastern
     // Pass timezone separately so Zoom handles DST correctly
-    const startTime = `${date}T14:00:00`;
+    const startTime = `${date}T13:00:00`;
 
     const meetingPayload = {
       topic,

@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 
 const DEFAULT_SHEET_ID = '1pt8LuAaMdLhpnpxVPod04QWaIEYiVKG2bkzf-E1VZM0';
-const SHEET_RANGE = 'A:E';
+const SHEET_RANGE = 'A:G';
 
 export interface RegistrationRow {
   registrationDateTime: string;
@@ -9,6 +9,8 @@ export interface RegistrationRow {
   registrantName: string;
   email: string;
   topics: string;
+  company: string;
+  role: string;
 }
 
 /**
@@ -51,6 +53,8 @@ export async function appendRegistrationRow(row: RegistrationRow): Promise<void>
             row.registrantName,
             row.email,
             row.topics,
+            row.company,
+            row.role,
           ],
         ],
       },

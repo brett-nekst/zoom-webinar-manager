@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { getWebinarContent } from '@/app/lib/webinarType';
 
 interface ZoomMeeting {
   id: number;
@@ -18,6 +19,16 @@ interface WednesdaySlot {
   date: string;
   label: string;
   meeting: ZoomMeeting | null;
+}
+
+interface IntegrationStatus {
+  key: string;
+  label: string;
+  configured: boolean;
+  missing: string[];
+  required: string[];
+  whatItDoes: string;
+  setupHint: string;
 }
 
 function getNextWednesdays(count: number): { date: string; label: string }[] {
@@ -56,12 +67,32 @@ export default function Home() {
   const [editingMeeting, setEditingMeeting] = useState<number | null>(null);
   const [editTopic, setEditTopic] = useState('');
   const [saving, setSaving] = useState(false);
+  const [statusList, setStatusList] = useState<IntegrationStatus[] | null>(null);
+  const [statusOpen, setStatusOpen] = useState(false);
 
   const loadMeetings = useCallback(async () => {
     setLoading(true);
     setError(null);
+
+    const wednesdays = getNextWednesdays(3);
+
+    // Auto-fill the alternating topic/agenda defaults for each slot. This is a
+    // pure function of the date, so it runs regardless of whether the Zoom API
+    // is reachable — otherwise a missing Zoom config would leave the fields blank.
+    const defaultTopics: Record<string, string> = {};
+    const defaultAgendas: Record<string, string> = {};
+    const defaultDurations: Record<string, string> = {};
+    wednesdays.forEach((w) => {
+      const content = getWebinarContent(w.date);
+      defaultTopics[w.date] = content.topic;
+      defaultAgendas[w.date] = content.agenda;
+      defaultDurations[w.date] = '60';
+    });
+    setTopics((prev) => ({ ...defaultTopics, ...prev }));
+    setAgendas((prev) => ({ ...defaultAgendas, ...prev }));
+    setDurations((prev) => ({ ...defaultDurations, ...prev }));
+
     try {
-      const wednesdays = getNextWednesdays(3);
       const res = await fetch('/api/zoom/meetings');
       if (!res.ok) {
         const data = await res.json();
@@ -80,17 +111,9 @@ export default function Home() {
         return { ...w, meeting: meeting || null };
       });
       setSlots(newSlots);
-
-      const defaultTopics: Record<string, string> = {};
-      const defaultDurations: Record<string, string> = {};
-      wednesdays.forEach((w) => {
-        defaultTopics[w.date] = 'Nekst Tips & Tricks Webinar';
-        defaultDurations[w.date] = '60';
-      });
-      setTopics((prev) => ({ ...defaultTopics, ...prev }));
-      setDurations((prev) => ({ ...defaultDurations, ...prev }));
     } catch (err) {
       setError('Failed to connect to Zoom API');
+      setSlots(wednesdays.map((w) => ({ ...w, meeting: null })));
       console.error(err);
     } finally {
       setLoading(false);
@@ -101,6 +124,17 @@ export default function Home() {
     loadMeetings();
   }, [loadMeetings]);
 
+  useEffect(() => {
+    fetch('/api/status')
+      .then((res) => res.json())
+      .then((data: { integrations: IntegrationStatus[] }) => {
+        setStatusList(data.integrations);
+        // Expand automatically when something needs attention.
+        if (data.integrations.some((i) => !i.configured)) setStatusOpen(true);
+      })
+      .catch(() => setStatusList(null));
+  }, []);
+
   const handleCreate = async (slot: WednesdaySlot) => {
     setCreating(slot.date);
     setError(null);
@@ -109,10 +143,10 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          topic: topics[slot.date] || 'Nekst Tips & Tricks Webinar',
+          topic: topics[slot.date] || getWebinarContent(slot.date).topic,
           date: slot.date,
           duration: parseInt(durations[slot.date] || '60'),
-          agenda: agendas[slot.date] || '',
+          agenda: agendas[slot.date] || getWebinarContent(slot.date).agenda,
         }),
       });
       if (!res.ok) {
@@ -198,7 +232,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-white">Zoom Webinar Manager</h1>
-            <p className="text-sm text-gray-400 mt-0.5">Upcoming Wednesday meetings at 2:00 PM ET</p>
+            <p className="text-sm text-gray-400 mt-0.5">Upcoming Wednesday meetings at 1:00 PM ET</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -225,13 +259,66 @@ export default function Home() {
           </div>
         )}
 
-        <div className="mb-8 p-4 bg-orange-950/40 border border-orange-800/50 rounded-lg">
-          <p className="text-sm text-orange-300">
-            <span className="font-medium">HubSpot Sync:</span> Install the{' '}
-            <span className="font-mono text-orange-200">Zoom for HubSpot</span> app from the HubSpot
-            App Marketplace to automatically sync these meetings into your CRM.
-          </p>
-        </div>
+        {statusList && (() => {
+          const configuredCount = statusList.filter((i) => i.configured).length;
+          const allGood = configuredCount === statusList.length;
+          return (
+            <div className="mb-8 rounded-lg border border-gray-800 bg-gray-900 overflow-hidden">
+              <button
+                onClick={() => setStatusOpen((o) => !o)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full inline-block ${allGood ? 'bg-green-400' : 'bg-amber-400'}`}
+                  />
+                  <span className="text-sm font-medium text-white">Setup Status</span>
+                  <span className="text-xs text-gray-500">
+                    {configuredCount} of {statusList.length} configured
+                  </span>
+                </div>
+                <span className="text-xs text-gray-500">{statusOpen ? 'Hide' : 'Show'}</span>
+              </button>
+
+              {statusOpen && (
+                <div className="px-4 pb-4 pt-1 flex flex-col gap-3 border-t border-gray-800">
+                  <p className="text-xs text-gray-400 leading-relaxed mt-3">
+                    <span className="font-medium text-gray-300">How this works:</span> Create a Wednesday
+                    meeting below, then share your registration page ({' '}
+                    <span className="font-mono text-gray-300">/register</span>) with prospects. When someone
+                    signs up, they&apos;re recorded as a HubSpot contact and appended to your master Google
+                    Sheet — including any topics they want covered. Each integration below powers one part of
+                    that flow.
+                  </p>
+
+                  {statusList.map((it) => (
+                    <div key={it.key} className="flex gap-3 pt-2 border-t border-gray-800/60">
+                      <span
+                        className={`w-2 h-2 rounded-full inline-block mt-1.5 flex-shrink-0 ${it.configured ? 'bg-green-400' : 'bg-amber-400'}`}
+                      />
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-white">{it.label}</span>
+                          <span className={`text-xs ${it.configured ? 'text-green-400' : 'text-amber-400'}`}>
+                            {it.configured ? 'Configured' : 'Not configured'}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-400">{it.whatItDoes}</span>
+                        {!it.configured && (
+                          <div className="mt-1 text-xs text-amber-300/80">
+                            <span className="text-gray-500">Missing: </span>
+                            <span className="font-mono">{it.missing.join(', ')}</span>
+                            <div className="text-gray-500 mt-0.5">{it.setupHint}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {loading && slots.length === 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -417,7 +504,7 @@ export default function Home() {
         )}
 
         <p className="text-center text-xs text-gray-600 mt-10">
-          Meetings are created in your Zoom account at 2:00 PM Eastern Time.
+          Meetings are created in your Zoom account at 1:00 PM Eastern Time.
         </p>
       </div>
     </div>
