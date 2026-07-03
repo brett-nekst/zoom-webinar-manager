@@ -73,8 +73,26 @@ export default function Home() {
   const loadMeetings = useCallback(async () => {
     setLoading(true);
     setError(null);
+
+    const wednesdays = getNextWednesdays(3);
+
+    // Auto-fill the alternating topic/agenda defaults for each slot. This is a
+    // pure function of the date, so it runs regardless of whether the Zoom API
+    // is reachable — otherwise a missing Zoom config would leave the fields blank.
+    const defaultTopics: Record<string, string> = {};
+    const defaultAgendas: Record<string, string> = {};
+    const defaultDurations: Record<string, string> = {};
+    wednesdays.forEach((w) => {
+      const content = getWebinarContent(w.date);
+      defaultTopics[w.date] = content.topic;
+      defaultAgendas[w.date] = content.agenda;
+      defaultDurations[w.date] = '60';
+    });
+    setTopics((prev) => ({ ...defaultTopics, ...prev }));
+    setAgendas((prev) => ({ ...defaultAgendas, ...prev }));
+    setDurations((prev) => ({ ...defaultDurations, ...prev }));
+
     try {
-      const wednesdays = getNextWednesdays(3);
       const res = await fetch('/api/zoom/meetings');
       if (!res.ok) {
         const data = await res.json();
@@ -93,21 +111,9 @@ export default function Home() {
         return { ...w, meeting: meeting || null };
       });
       setSlots(newSlots);
-
-      const defaultTopics: Record<string, string> = {};
-      const defaultAgendas: Record<string, string> = {};
-      const defaultDurations: Record<string, string> = {};
-      wednesdays.forEach((w) => {
-        const content = getWebinarContent(w.date);
-        defaultTopics[w.date] = content.topic;
-        defaultAgendas[w.date] = content.agenda;
-        defaultDurations[w.date] = '60';
-      });
-      setTopics((prev) => ({ ...defaultTopics, ...prev }));
-      setAgendas((prev) => ({ ...defaultAgendas, ...prev }));
-      setDurations((prev) => ({ ...defaultDurations, ...prev }));
     } catch (err) {
       setError('Failed to connect to Zoom API');
+      setSlots(wednesdays.map((w) => ({ ...w, meeting: null })));
       console.error(err);
     } finally {
       setLoading(false);

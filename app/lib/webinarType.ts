@@ -18,7 +18,7 @@ const ADVANCED: WebinarContent = {
   type: 'advanced',
   topic: 'Nekst Advanced User Training',
   agenda:
-    'For current Nekst users ready to go deeper — advanced workflows, automations, and power-user tips to get more out of Nekst.',
+    'For current Nekst users ready to go deeper — advanced workflows, maximizing features, and power-user tips to get more out of Nekst.',
 };
 
 const NEW_USER: WebinarContent = {
