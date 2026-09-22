@@ -67,7 +67,9 @@ export default function RegisterPage() {
             // This excludes stray "nekst" meetings on other weekdays.
             const topic = m.topic.toLowerCase();
             const isWebinarTitle =
-              topic.includes('user training') || topic.includes('tips & tricks');
+              topic.includes('user training') ||
+              topic.includes('tips & tricks') ||
+              topic.includes('webinar');
             const weekday = new Date(m.start_time).toLocaleDateString('en-US', {
               weekday: 'long',
               timeZone: 'America/New_York',
